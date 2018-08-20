@@ -12,13 +12,17 @@ import matplotlib.pyplot as plt
 
 file = pd.read_csv('/Users/lucas/Documents/Project/Python/House_Price/DataSource/1DataSource/QiaoKou.csv',delimiter = '\t')
 
-#去除m／2
-file['Average_price'] = file.Average_price.map(lambda x: x.strip('元/㎡'))
+#去除m／2  using the func "apply" to do specific action
+#note "apply" used in whole or number of colunms or raws
+# "map" used in only one coloun or raw 
+file['Average_price'] = file.Average_price.apply(lambda x: x.strip('元/㎡'))
 
 #去除年
 file['Time'] = file.Time.apply(lambda x: x.strip('年'))
 file['Time'] = file.Time.apply(lambda x: x.replace('无','0'))
+
 #主要元素 房价、房子大小、小区名字、建筑年份、户型
+
 data = pd.concat([file['Community_name'],file['Time'],file['Size'],file['Total_price'],file['Average_price']],axis =1)
 data['Average_price'] = data['Average_price'].apply(pd.to_numeric)
 
