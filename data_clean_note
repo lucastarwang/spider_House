@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Aug 18 16:32:43 2018
+
+@author: lucas
+"""
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+file = pd.read_csv('/Users/lucas/Documents/Project/Python/House_Price/DataSource/1DataSource/QiaoKou.csv',delimiter = '\t')
+
+#去除m／2
+file['Average_price'] = file.Average_price.map(lambda x: x.strip('元/㎡'))
+
+#去除年
+file['Time'] = file.Time.apply(lambda x: x.strip('年'))
+file['Time'] = file.Time.apply(lambda x: x.replace('无','0'))
+#主要元素 房价、房子大小、小区名字、建筑年份、户型
+data = pd.concat([file['Community_name'],file['Time'],file['Size'],file['Total_price'],file['Average_price']],axis =1)
+data['Average_price'] = data['Average_price'].apply(pd.to_numeric)
+
+#得到均价、小区的销售套数，建筑年份，小区名字
+grouped = data.groupby(data['Community_name']) 
+group = grouped.mean()
+
+#每个小区销售的套数
+CommunityCount = list(grouped.size())
+
+#每个小区的均价
+grouped2 = data['Average_price'].groupby(data['Community_name'])
+group2 = grouped2.mean()
+CommunityPrice = list(group2)
+
+#小区名字
+CommunityName = list(grouped.size().index)
+
+#建筑年份
+data['Time'] = data['Time'].apply(pd.to_numeric)
+grouped3 = data['Time'].groupby(data['Community_name'])
+group3 = grouped3.mean()
+CommunityTime = list(group3)
+
+###重组数据
+deter = pd.DataFrame([CommunityName,CommunityCount,CommunityPrice,CommunityTime]).
+
+file['Time'] = file.Time.apply(lambda x: x.strip('年'))
