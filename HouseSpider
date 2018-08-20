@@ -1,0 +1,54 @@
+# -*- coding: utf-8 -*-
+import scrapy
+from HousePrice.items import HousepriceItem
+
+class HouseSpider(scrapy.Spider):
+    name = 'House'
+    allowed_domains = ['wh.sofang.com']
+    start_urls = ['http://wh.sofang.com/esfsale/area/aa875']
+
+
+
+    def parse(self, response):
+        DetailItem = HousepriceItem()
+        nods_spread = response.xpath("//div[contains(@class,'list_spread')]//dl")
+        nods_free = response.xpath("//div[contains(@class,'list_free')]//dl")
+        for item in nods_spread:
+            DetailItem['Community_name'] =item.xpath(".//strong/text()").extract_first()
+            DetailItem['Average_price'] = item.xpath(".//p[@class='junjia']/text()").extract_first().strip()
+            DetailItem['Total_price'] = item.xpath(".//p[@class='price']/span/text()").extract_first()
+            DetailItem['Address'] = item.xpath(".//div[@class='house_info']//span[@class='address']/text()").extract_first().strip()
+            Detail_Info = item.xpath(".//p[contains(@class,'type')andcontains(@class,'clearfix')]//span/text()").extract()
+            if len(Detail_Info) != 6:
+                list = ['无','无','无','无','无']
+                Detail_Info = Detail_Info + list
+            for item in Detail_Info:
+                DetailItem['Time'] = Detail_Info[5]
+                DetailItem['Size'] = Detail_Info[0]
+                DetailItem['Form'] = Detail_Info[1]
+                DetailItem['Floor'] = Detail_Info[2]
+                DetailItem['Direction'] = Detail_Info[3]
+            yield DetailItem
+        for item_free in nods_free:
+            DetailItem['Community_name'] = item_free.xpath(".//strong/text()").extract_first()
+            DetailItem['Average_price'] = item_free.xpath(".//p[@class='junjia']/text()").extract_first().strip()
+            DetailItem['Total_price'] = item_free.xpath(".//p[@class='price']/span/text()").extract_first()
+            DetailItem['Address'] = item_free.xpath(".//div[contains(@class,'house_info')]//span[@class='address']/text()").extract_first().strip()
+            Detail_Info = item_free.xpath(".//p[contains(@class,'type')andcontains(@class,'clearfix')]//span/text()").extract()
+            if len(Detail_Info) != 6:
+                list = ['无','无','无','无','无']
+                Detail_Info = Detail_Info + list
+            for item in Detail_Info:
+                DetailItem['Time'] = Detail_Info[5]
+                DetailItem['Size'] = Detail_Info[0]
+                DetailItem['Form'] = ''.join(Detail_Info[1].split())
+                DetailItem['Floor'] = Detail_Info[2]
+                DetailItem['Direction'] = Detail_Info[3]
+            yield DetailItem
+
+        next_page_url =response.xpath("//li[@class='right']/a/@href|//div[@class='page_nav']/ul/li[last()]/a/@href").extract_first()
+        if next_page_url:
+            next_url = 'http://wh.sofang.com' + next_page_url
+            yield scrapy.Request(next_url,callback=self.parse)
+
+        pass
